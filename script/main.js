@@ -284,7 +284,7 @@ function setupMemoriesSlider() {
 
   const startAuto = () => {
     stopAuto();
-    autoTimer = setInterval(() => goTo(index + 1), 4000);
+    autoTimer = setInterval(() => goTo(index + 1), 2400);
   };
 
   const stopAuto = () => {
@@ -490,7 +490,7 @@ const animationTimeline = () => {
   const messageText = "Happy birthday to youu baby girl 👙 ";
 
 const memSlidesCount = document.querySelectorAll("#memoriesTrack .mem-slide").length || 3;
-const memSecondsPerSlide = 4.0; // must match your slider interval (2400ms)
+const memSecondsPerSlide = 2.4; // must match your slider interval (2400ms)
 const memHoldSeconds = Math.max(6.2, memSlidesCount * memSecondsPerSlide);
 
   const tl = gsap.timeline({ paused: false });
