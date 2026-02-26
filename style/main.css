@@ -2,15 +2,26 @@
 html { box-sizing: border-box; }
 *, *:before, *:after { box-sizing: inherit; }
 
-body {
+:root{
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  --stage-w: 900px;
+  --shadow: 0 22px 70px rgba(0,0,0,0.45);
+}
+
+body{
   font-family: 'Poppins', sans-serif;
   margin: 0;
   color: #fff;
   overflow: hidden;
   background: radial-gradient(circle at 18% 18%, #ff76bd 0%, #2a0730 55%, #07000a 100%);
+  padding: 0;
 }
 
-.song { visibility: hidden; }
+.song{ visibility: hidden; }
 
 .bg-blur{
   position: fixed;
@@ -33,69 +44,129 @@ body {
   pointer-events: none;
 }
 
-.container {
-  height: 100vh;
+.container{
+  width: 100vw;
+  height: 100svh;
+  height: 100dvh;
   margin: 0 auto;
   overflow: hidden;
   position: relative;
   text-align: center;
   visibility: hidden;
-  width: 100vw;
+
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
 }
 
-.container > div {
-  left: 0;
+/* Every scene is absolutely positioned, but centered properly for iPhone */
+.container > div{
   position: absolute;
+  left: 0;
   right: 0;
-  top: 18vh;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 100%;
 }
 
+/* Utility: center layout + keep internal spacing nice */
+.center-stage{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 18px 14px;
+  gap: 12px;
+
+  max-height: calc(100dvh - var(--safe-top) - var(--safe-bottom));
+}
+
+/* Shared stage text container */
 .stage{
-  width: min(900px, 92vw);
+  width: min(var(--stage-w), 92vw);
   margin: 0 auto;
-  padding: 10px 12px;
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  backdrop-filter: none;
   text-shadow: 0 10px 26px rgba(0,0,0,0.35);
 }
 
 /* Titles */
-.one { font-size: 4.5rem; margin: 0; }
+.one{
+  font-size: clamp(2.4rem, 10vw, 5rem);
+  margin: 0;
+  line-height: 1.06;
+}
 .one span{
   display: inline-block;
   background: linear-gradient(135deg, #ff57b6, #ffe0f2);
   -webkit-background-clip: text;
   background-clip: text;
   color: #fffeff;
+  max-width: 92vw;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
-.two {
-  font-size: 1.15rem;
+.wave{ font-size: 0.9em; }
+
+.two{
+  font-size: clamp(1rem, 4vw, 1.2rem);
   font-weight: 300;
   opacity: .95;
-  margin-top: 12px;
+  margin: 0;
+  line-height: 1.4;
 }
-.three { font-size: 3rem; }
 
+.three{
+  font-size: clamp(1.6rem, 7vw, 3rem);
+  margin: 0;
+  line-height: 1.1;
+}
+
+/* ---------- Instagram Card ---------- */
 .four .text-box{
   margin: 0 auto;
   position: relative;
   width: min(640px, 92vw);
 }
 
-/* Instagram chat card */
+/* card */
 .ig-card{
   padding: 0;
   overflow: hidden;
   border-radius: 22px;
   background: rgba(18,18,22,0.78);
   border: 1px solid rgba(255,255,255,0.10);
-  box-shadow: 0 22px 70px rgba(0,0,0,0.45);
+  box-shadow: var(--shadow);
   backdrop-filter: blur(16px);
   display: flex;
   flex-direction: column;
-  max-height: 72vh;
+
+  width: min(640px, 92vw);
+  height: min(72vh, 560px);
+  max-height: calc(100dvh - var(--safe-top) - var(--safe-bottom) - 24px);
+}
+
+/* IG mobile: full width, stable height */
+@media (max-width: 768px){
+  .four.center-stage{
+    padding: 0;
+    gap: 0;
+  }
+
+  .four .text-box{
+    width: 100vw;
+    max-width: 100vw;
+  }
+
+  .ig-card{
+    width: 100vw;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    height: calc(100dvh - var(--safe-top) - var(--safe-bottom));
+    max-height: calc(100dvh - var(--safe-top) - var(--safe-bottom));
+  }
 }
 
 .ig-top{
@@ -119,19 +190,25 @@ body {
   flex: 0 0 auto;
 }
 .ig-avatar img{ width: 100%; height: 100%; object-fit: cover; }
+
 .ig-meta{ text-align: left; }
-.ig-name{ margin:0; font-weight: 700; font-size: 14px; color:#fff; line-height: 1.05; }
-.ig-status{ margin: 3px 0 0; font-size: 12px; opacity: .75; color: rgba(255,255,255,0.65); }
+.ig-name{
+  margin: 0;
+  font-weight: 700;
+  font-size: 14px;
+  color: #fff;
+  line-height: 1.05;
+}
 
 .ig-right{ display:flex; align-items:center; gap:10px; }
 .ig-icon{
-  width:34px;
-  height:34px;
-  border-radius:999px;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
   border: 1px solid rgba(255,255,255,0.12);
   background: rgba(255,255,255,0.06);
-  color:#fff;
-  cursor:pointer;
+  color: #fff;
+  cursor: pointer;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -143,6 +220,7 @@ body {
   flex-direction: column;
   gap: 10px;
   flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
@@ -154,7 +232,7 @@ body {
   border-radius: 18px;
   max-width: 84%;
   line-height: 1.35;
-  font-size: 14px;
+  font-size: clamp(12px, 3.5vw, 14px);
 }
 
 .ig-left-bubble{
@@ -163,7 +241,6 @@ body {
   border: 1px solid rgba(255,255,255,0.10);
   color:#fff;
 }
-
 .ig-right-bubble{
   align-self: flex-end;
   background: #3b82f6;
@@ -185,6 +262,7 @@ body {
   border-top: 1px solid rgba(255,255,255,0.08);
   background: rgba(255,255,255,0.03);
   flex: 0 0 auto;
+  padding-bottom: calc(12px + var(--safe-bottom));
 }
 
 .ig-input{
@@ -193,7 +271,7 @@ body {
   padding: 10px 12px;
   border-radius: 999px;
   background: rgba(255,255,255,0.06);
-  font-size: 14px;
+  font-size: clamp(12px, 3.5vw, 14px);
   color:#fff;
   position: relative;
   overflow: hidden;
@@ -231,26 +309,31 @@ body {
 .ig-send:hover{ opacity: .9; }
 .ig-send:active{ transform: scale(0.92); }
 
-.five p {
-  font-size: 2rem;
+/* ---------- Five text ---------- */
+.five p{
+  font-size: clamp(1.1rem, 5.2vw, 2rem);
   left: 0;
   position: absolute;
   right: 0;
   text-shadow: 0 12px 28px rgba(0,0,0,0.35);
+  margin: 0;
+  padding: 0 10px;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
-.idea-3 strong {
+.idea-3 strong{
   border-radius: 14px;
   display: inline-block;
   padding: 4px 10px;
   background: rgba(255,255,255,0.12);
   border: 1px solid rgba(255,255,255,0.14);
 }
-.five .idea-5 { font-size: 4rem; }
-.idea-5 span, .idea-6 span, .wish-hbd span { display: inline-block; }
-.idea-6 span { font-size: 15rem; }
+.five .idea-5{ font-size: clamp(1.6rem, 8vw, 4rem); }
+.idea-5 span, .idea-6 span, .wish-hbd span{ display: inline-block; }
+.idea-6 span{ font-size: clamp(6rem, 18vw, 15rem); }
 
-/* Profile screen */
-.six { position: relative; top: 8vh; z-index: 2; }
+/* ---------- Birthday (six) ---------- */
+.six{ z-index: 2; }
 
 .profile-wrap{
   display: inline-block;
@@ -261,11 +344,13 @@ body {
   box-shadow: 0 22px 70px rgba(0,0,0,0.35);
   backdrop-filter: blur(14px);
   position: relative;
+  max-width: min(92vw, 520px);
 }
 
 .six img.profile-picture{
   display: inline-block;
-  height: 350px;
+  height: clamp(220px, 36vh, 350px);
+  width: auto;
   max-width: 100%;
   border-radius: 18px;
   border: 1px solid rgba(255,255,255,0.16);
@@ -275,7 +360,7 @@ body {
 .six .hat{
   position: absolute;
   z-index: 5;
-  width: 90px;
+  width: clamp(60px, 10vw, 90px);
   top: 6px;
   left: 50%;
   transform: translateX(-50%) translateY(-55%) rotate(-12deg);
@@ -283,22 +368,42 @@ body {
   pointer-events: none;
 }
 
-.wish-hbd { font-size: 2.5em; margin: 14px 0 0; text-transform: uppercase; }
-.wish h5 { font-size: 1.6rem; font-weight: 300; margin: 10px 0 0; opacity: .92; }
-
-/* Cake */
-.cake-area{
-  margin-top: 14px;
+.six .wish{
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+}
+
+.wish-hbd{
+  font-size: clamp(1.7rem, 4.2vw, 2.5rem);
+  margin: 14px 0 0;
+  text-transform: uppercase;
+}
+
+.wish h5{
+  font-size: clamp(1rem, 3.2vw, 1.6rem);
+  font-weight: 300;
+  margin: 10px 0 14px;
+  opacity: .92;
+  line-height: 1.35;
+  padding: 0 10px;
+}
+
+/* Cake */
+.cake-area{
+  margin-top: 8px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: calc(10px + var(--safe-bottom));
 }
 
 .cake{
   position: relative;
-  width: 180px;
-  height: 150px;
+  width: clamp(130px, 36vw, 180px);
+  height: clamp(115px, 28vw, 150px);
 }
 
 .cake-top, .cake-mid, .cake-bottom{
@@ -311,22 +416,22 @@ body {
 
 .cake-bottom{
   bottom: 0;
-  width: 180px;
-  height: 58px;
+  width: 100%;
+  height: clamp(44px, 10vw, 58px);
   background: rgba(255, 220, 240, 0.95);
   border: 1px solid rgba(255,255,255,0.18);
 }
 .cake-mid{
-  bottom: 46px;
-  width: 150px;
-  height: 52px;
+  bottom: clamp(34px, 8.5vw, 46px);
+  width: 84%;
+  height: clamp(40px, 9vw, 52px);
   background: rgba(255, 150, 210, 0.90);
   border: 1px solid rgba(255,255,255,0.18);
 }
 .cake-top{
-  bottom: 88px;
-  width: 120px;
-  height: 46px;
+  bottom: clamp(66px, 16vw, 88px);
+  width: 66%;
+  height: clamp(34px, 8vw, 46px);
   background: rgba(255, 95, 182, 0.88);
   border: 1px solid rgba(255,255,255,0.18);
 }
@@ -334,10 +439,10 @@ body {
 .candle{
   position: absolute;
   left: 50%;
-  bottom: 118px;
+  bottom: clamp(88px, 21vw, 118px);
   transform: translateX(-50%);
   width: 16px;
-  height: 40px;
+  height: clamp(32px, 8.5vw, 40px);
   border-radius: 10px;
   background: rgba(255,255,255,0.92);
   box-shadow: 0 10px 18px rgba(0,0,0,0.2);
@@ -350,7 +455,7 @@ body {
   transform: translateX(-50%);
   width: 14px;
   height: 18px;
-  border-radius: 50% 50% 50% 50%;
+  border-radius: 50%;
   background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.9), rgba(255,180,70,0.95) 35%, rgba(255,70,120,0.9) 80%);
   filter: drop-shadow(0 10px 18px rgba(255,120,160,0.35));
   animation: flicker 0.22s infinite alternate;
@@ -378,6 +483,8 @@ body {
   background: linear-gradient(135deg,#ff3cae,#ffd1e6);
   color: #160014;
   box-shadow: 0 18px 30px rgba(0,0,0,0.25);
+  font-size: clamp(12px, 3.5vw, 14px);
+  white-space: nowrap;
 }
 .blow-btn:active{ transform: scale(0.98); }
 
@@ -400,10 +507,7 @@ body {
   filter: blur(1px);
 }
 
-/* Smoke animation triggered by JS */
-.smoke.puff{
-  animation: smokePuff 1.2s ease-out forwards;
-}
+.smoke.puff{ animation: smokePuff 1.2s ease-out forwards; }
 .smoke.puff:after{
   transform: translateX(18px) translateY(-10px) scale(1.3);
   opacity: .7;
@@ -415,12 +519,19 @@ body {
 }
 
 /* Balloons + hearts */
-.baloons img { display: inline-block; position: absolute; }
-.baloons img:nth-child(even) { left: -10%; }
-.baloons img:nth-child(odd) { right: -10%; }
-.baloons img:nth-child(3n + 0) { left: 30%; }
+.baloons img{ display: inline-block; position: absolute; }
+.baloons img:nth-child(even){ left: -10%; }
+.baloons img:nth-child(odd){ right: -10%; }
+.baloons img:nth-child(3n + 0){ left: 30%; }
 
-.seven, .eight { height: 100vh; position: fixed; top: 0; width: 100vw; pointer-events: none; z-index: 1; }
+.seven, .eight{
+  height: 100dvh;
+  position: fixed;
+  top: 0;
+  width: 100vw;
+  pointer-events: none;
+  z-index: 1;
+}
 
 .hearts{ position: fixed; inset: 0; pointer-events: none; z-index: 1; }
 .heart{
@@ -444,7 +555,7 @@ body {
 .heart:after{ top: -8px; left: 0; }
 
 /* Confetti circles */
-.eight svg { left: 0; position: absolute; top: 0; visibility: hidden; width: 25px; z-index: 0; }
+.eight svg{ left: 0; position: absolute; top: 0; visibility: hidden; width: 25px; z-index: 0; }
 .eight svg:nth-child(1) { fill: #ff7ac6; left: 5vw; top: 7vh; }
 .eight svg:nth-child(2) { fill: #ffd1e6; left: 35vw; top: 23vh; }
 .eight svg:nth-child(3) { fill: #c78bff; left: 23vw; top: 33vh; }
@@ -457,24 +568,24 @@ body {
 
 /* Memories */
 .memories{
-  top: 16vh;
-  width: min(860px, 96vw);
-  
+  width: min(96vw, 860px);
 }
 
 .memories-title{
   margin: 0;
-  font-size: 2.4rem;
-  text-shadow: 0 12px 28px rgba(0,0,0,0.35);
+  font-size: clamp(1.6rem, 5vw, 2.4rem);
+  padding: 0 10px;
 }
 
 .memories-sub{
   margin: 8px 0 18px;
   opacity: .92;
+  font-size: clamp(0.95rem, 3.4vw, 1.05rem);
+  padding: 0 12px;
 }
 
 .memories-slider{
-  width: min(720px, 92vw);
+  width: min(92vw, 720px);
   margin: 0 auto;
   border-radius: 22px;
   background: rgba(18,18,22,0.65);
@@ -490,22 +601,22 @@ body {
   transform: translateX(0);
 }
 
-.mem-slide{
+.mem-slide {
   min-width: 100%;
   aspect-ratio: 16 / 10;
-  background: rgba(255,255,255,0.06);
+  background: rgba(0,0,0,0.25);   /* better background for empty space */
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.mem-slide img{
+.mem-slide img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;    /* FULL image visible */
+  object-position: center;
   display: block;
 }
-
 .mem-dots{
   position: absolute;
   bottom: 10px;
@@ -525,18 +636,24 @@ body {
   border-radius: 999px;
   background: rgba(255,255,255,0.35);
 }
-.dot.active{
-  background: rgba(255,255,255,0.95);
-}
+.dot.active{ background: rgba(255,255,255,0.95); }
 
-.mem-hint{
-  margin: 12px 0 0;
-  opacity: .85;
-}
+.mem-hint{ margin: 12px 0 0; opacity: .85; }
 
 /* End screen */
-.nine p { font-size: 1.6rem; font-weight: 300; }
-#replay { cursor: pointer; z-index: 3; text-decoration: underline; opacity: .9; }
+.nine p{
+  font-size: clamp(1.05rem, 4.8vw, 1.6rem);
+  font-weight: 300;
+  margin: 0;
+  padding: 0 10px;
+  line-height: 1.35;
+}
+#replay{
+  cursor: pointer;
+  z-index: 3;
+  text-decoration: underline;
+  opacity: .9;
+}
 
 .gift-wrap{
   margin-top: 18px;
@@ -548,7 +665,7 @@ body {
 }
 
 .gift-title{
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 4vw, 1.2rem);
   margin: 0 0 10px;
   font-weight: 700;
 }
@@ -581,478 +698,33 @@ body {
 /* hide profile card until six scene starts */
 .profile-wrap{ opacity: 0; visibility: hidden; }
 
-/* Mobile: IG look + cake sizing */
-@media screen and (max-width: 600px) {
-  .container > div{ top: 12vh; }
-
-  .four .text-box{
-    width: 100vw;
-    max-width: 100vw;
-    margin: 0;
-    padding: 0;
-  }
-
-  .ig-card{
-    border-radius: 0;
-    max-height: 78vh;
-    height: 78vh;
-    width: 100vw;
-    border-left: 0;
-    border-right: 0;
-  }
-
-  .ig-top{ padding: 12px 12px; }
-  .ig-name{ font-size: 13.5px; }
-  .ig-icon{ width: 32px; height: 32px; }
-
-  .ig-body{ padding: 12px; gap: 8px; }
-  .ig-bubble{ font-size: 13px; max-width: 88%; padding: 9px 12px; }
-
-  .ig-input-row{ padding: 10px 12px; }
-  .ig-input{ min-height: 42px; font-size: 13px; }
-  .ig-send{ width: 46px; height: 46px; }
-  .ig-send svg{ width: 28px; height: 28px; }
-
-  .six .hat{
-    width: 60px;
-    top: 2px;
-    transform: translateX(-50%) translateY(-58%) rotate(-12deg);
-  }
-
-  .cake{ width: 160px; height: 140px; }
-  .cake-bottom{ width: 160px; }
-  .cake-mid{ width: 132px; }
-  .cake-top{ width: 106px; }
-
-  .memories-title{ font-size: 2rem; }
-}
-
-/* ===== Fix birthday screen spacing so cake never overlaps text ===== */
-.six .wish{
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.six .wish h5{
-  margin: 10px 0 18px; /* adds space under wish text */
-  line-height: 1.35;
-}
-
-.cake-area{
-  margin-top: 10px;
-  padding-top: 6px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-.blow-btn{
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  z-index: 6; /* keep above anything */
-}
-
-/* Make cake smaller on mobile so everything fits */
-@media screen and (max-width: 600px) {
-  .six{
-    top: 4vh; /* bring content slightly up */
-  }
-
-  .six img.profile-picture{
-    height: 280px; /* reduce photo height so cake + button fits */
-  }
-
-  .cake{
-    width: 140px;
-    height: 125px;
-  }
-
-  .cake-bottom{ width: 140px; height: 50px; }
-  .cake-mid{ width: 118px; height: 46px; bottom: 40px; }
-  .cake-top{ width: 98px; height: 40px; bottom: 78px; }
-
-  .candle{ bottom: 106px; height: 36px; }
-}
-
-
+/* Blow popup */
 .blow-popup{
   position: fixed;
-  top: 12px;                  /* very top */
+  top: calc(12px + var(--safe-top));
   left: 50%;
   transform: translateX(-50%);
-  
   background: rgba(0,0,0,0.85);
   color: #fff;
-
-  padding: 10px 18px;
+  padding: 10px 14px;
   border-radius: 999px;
-
-  font-size: 13px;
+  font-size: clamp(12px, 3.2vw, 13px);
   font-weight: 500;
   text-align: center;
-
-  max-width: 90vw;
+  max-width: 92vw;
   width: max-content;
-
   box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-
-  z-index: 999999;            /* above everything */
+  z-index: 999999;
   pointer-events: none;
-
   opacity: 0;
 }
 
-/* =========================
-   iPhone safe area + real viewport fixes
-   ========================= */
-:root{
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-/* Use dynamic viewport height on iOS */
-.container{
-  height: 100dvh;
-  min-height: 100vh;
-}
-
-/* Prevent content getting clipped on iPhone */
-body{
-  overflow: hidden;
-}
-
-/* Make stage positioning adapt better on short/tall phones */
-.container > div{
-  top: clamp(10vh, 14vh, 18vh);
-}
-
-/* =========================
-   Birthday screen responsiveness (six)
-   ========================= */
-.six{
-  top: clamp(2vh, 5vh, 8vh);
-}
-
-/* Profile card should never overflow screen */
-.profile-wrap{
-  max-width: min(92vw, 520px);
-}
-
-/* Make image responsive by height too */
-.six img.profile-picture{
-  height: clamp(220px, 36vh, 350px);
-  width: auto;
-  max-width: 100%;
-}
-
-/* Wish text scales smoothly */
-.wish-hbd{
-  font-size: clamp(1.7rem, 4.2vw, 2.5rem);
-}
-
-.wish h5{
-  font-size: clamp(1rem, 3.2vw, 1.6rem);
-  margin: 10px 0 14px;
-  line-height: 1.35;
-  padding: 0 10px;
-}
-
-/* Cake scales with viewport */
-.cake{
-  width: clamp(130px, 36vw, 180px);
-  height: clamp(115px, 28vw, 150px);
-}
-
-.cake-bottom{
-  width: 100%;
-  height: clamp(44px, 10vw, 58px);
-}
-
-.cake-mid{
-  width: 84%;
-  height: clamp(40px, 9vw, 52px);
-  bottom: clamp(34px, 8.5vw, 46px);
-}
-
-.cake-top{
-  width: 66%;
-  height: clamp(34px, 8vw, 46px);
-  bottom: clamp(66px, 16vw, 88px);
-}
-
-.candle{
-  bottom: clamp(88px, 21vw, 118px);
-  height: clamp(32px, 8.5vw, 40px);
-}
-
-/* Button always visible */
-.cake-area{
-  gap: 10px;
-  margin-top: 8px;
-  padding-bottom: calc(10px + var(--safe-bottom));
-}
-
-.blow-btn{
-  font-size: clamp(12px, 3.5vw, 14px);
-  padding: 10px 16px;
-  max-width: 90%;
-  white-space: nowrap;
-}
-
-/* =========================
-   Blow popup: safe area + responsive
-   ========================= */
-.blow-popup{
-  top: calc(12px + var(--safe-top));
-  font-size: clamp(12px, 3.2vw, 13px);
-  padding: 10px 14px;
-  max-width: 92vw;
-  text-align: center;
-}
-
-/* =========================
-   Memories block responsive
-   ========================= */
-.memories{
-  top: clamp(10vh, 13vh, 16vh);
-  width: min(96vw, 860px);
-}
-
-.memories-title{
-  font-size: clamp(1.6rem, 5vw, 2.4rem);
-  padding: 0 10px;
-}
-
-.memories-sub{
-  font-size: clamp(0.95rem, 3.4vw, 1.05rem);
-  padding: 0 12px;
-}
-
-/* Slider fits on small screens */
-.memories-slider{
-  width: min(92vw, 720px);
-}
-
-/* =========================
-   Extra: on very short screens (small iPhones landscape etc.)
-   ========================= */
-@media (max-height: 700px){
-  .container > div{
-    top: 10vh;
-  }
-
-  .six{
-    top: 2vh;
-  }
-
-  .six img.profile-picture{
-    height: 30vh;
-    min-height: 200px;
-  }
-
-  .wish h5{
-    margin-bottom: 10px;
-  }
-}
-/* =========================
-   GLOBAL: better responsive text + wrapping
-   ========================= */
-.stage{
-  padding-inline: 14px;
-}
-
-.one, .two, .three, .five p, .memories-title{
-  word-break: break-word;
-  overflow-wrap: anywhere;
-}
-
-.one{
-  font-size: clamp(2rem, 9vw, 4.5rem);
-  line-height: 1.05;
-}
-
-.two{
-  font-size: clamp(0.95rem, 3.8vw, 1.15rem);
-  line-height: 1.35;
-}
-
-.three{
-  font-size: clamp(1.6rem, 7vw, 3rem);
-  line-height: 1.1;
-}
-
-/* Make name wrap nicely, never overflow */
-.one span{
-  display: inline-block;
-  max-width: 92vw;
-  white-space: normal;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-}
-
-/* Stage placement adapts better on small heights */
-.container > div{
-  top: clamp(8vh, 14vh, 18vh);
-}
-
-/* On very small height screens, move content up a bit */
+/* Very short screens: keep centered but reduce padding */
 @media (max-height: 720px){
-  .container > div{
-    top: 8vh;
-  }
-}
-
-/* =========================
-   Instagram section responsiveness (small screens)
-   ========================= */
-.ig-card{
-  width: min(640px, 92vw);
-  max-height: min(72vh, 560px);
-}
-
-/* Chat area should be usable on small height phones */
-.ig-body{
-  padding: 12px;
-  gap: 8px;
-}
-
-/* Bubbles and text scale */
-.ig-bubble{
-  font-size: clamp(12px, 3.5vw, 14px);
-  max-width: 88%;
-  padding: 9px 12px;
-}
-
-/* Input row stays visible */
-.ig-input-row{
-  padding: 10px 12px;
-}
-
-.ig-input{
-  min-height: 42px;
-  font-size: clamp(12px, 3.5vw, 14px);
-}
-
-/* On extra small width screens */
-@media (max-width: 380px){
-  .one{
-    font-size: clamp(2rem, 10vw, 2.8rem);
-  }
-
-  .two{
-    font-size: 0.9rem;
-  }
-
+  .center-stage{ padding: 12px 12px; }
   .ig-card{
-    width: 100vw;
-    border-radius: 0;
-    height: 78vh;
-    max-height: 78vh;
-    border-left: 0;
-    border-right: 0;
-  }
-
-  .ig-top .ig-name{
-    font-size: 13px;
-  }
-
-  .ig-icon{
-    width: 30px;
-    height: 30px;
+    height: calc(100dvh - var(--safe-top) - var(--safe-bottom));
+    max-height: calc(100dvh - var(--safe-top) - var(--safe-bottom));
   }
 }
 
-/* On short height screens (iPhone landscape etc.) keep IG card smaller */
-@media (max-height: 700px){
-  .ig-card{
-    height: 72vh;
-    max-height: 72vh;
-  }
-}
-
-/* =========================
-   FIX: IG screen full responsive (mobile)
-   ========================= */
-
-/* Make the IG card always fit the viewport cleanly */
-.four .text-box{
-  width: min(640px, 92vw);
-  margin: 0 auto;
-}
-
-@media (max-width: 768px){
-  .container > div{
-    top: 10vh; /* less top gap so card fits */
-  }
-
-  .four .text-box{
-    width: 100vw;
-    max-width: 100vw;
-    margin: 0;
-    padding: 0;
-  }
-
-  .ig-card{
-    width: 100vw;
-    height: 82vh;         /* main fix */
-    max-height: 82vh;
-    border-radius: 0;
-    border-left: 0;
-    border-right: 0;
-  }
-
-  .ig-body{
-    flex: 1 1 auto;
-    min-height: 0;        /* important so scroll works */
-    padding: 12px;
-  }
-
-  .ig-top{
-    padding: 12px 12px;
-  }
-
-  .ig-input-row{
-    padding: 10px 12px;
-  }
-}
-
-/* Extra small width phones */
-@media (max-width: 380px){
-  .ig-card{
-    height: 84vh;
-    max-height: 84vh;
-  }
-
-  .ig-bubble{
-    font-size: 12.5px;
-  }
-
-  .ig-name{
-    font-size: 13px;
-  }
-}
-
-/* Short height devices: keep input visible */
-@media (max-height: 700px){
-  .ig-card{
-    height: 78vh;
-    max-height: 78vh;
-  }
-}
-
-/* =========================
-   "Hi Muskan" a bit bigger
-   ========================= */
-.one{
-  font-size: clamp(2.4rem, 10vw, 5rem);
-  line-height: 1.05;
-}
-
-.two{
-  font-size: clamp(1rem, 4vw, 1.2rem);
-}

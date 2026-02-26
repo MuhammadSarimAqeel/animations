@@ -1,4 +1,4 @@
-// script/main.js (complete updated)
+// script/main.js (UPDATED: fixes replay candle + IG sent message text)
 
 // ===========================
 // Boot (NO music popup)
@@ -6,7 +6,6 @@
 window.addEventListener("load", () => {
   const startTimeline = () => {
     try {
-      // Try to autoplay music silently (may be blocked on mobile, that is fine)
       const song = document.querySelector(".song");
       if (song) song.play().catch(() => {});
       animationTimeline();
@@ -107,22 +106,6 @@ function setupNoGiftButton() {
 // ===========================
 // Helpers
 // ===========================
-function setBubbleWithSpans(el, text) {
-  if (!el) return [];
-  const chars = String(text).split("");
-  el.innerHTML = chars
-    .map((ch) => `<span>${ch === " " ? "&nbsp;" : ch}</span>`)
-    .join("");
-
-  const spans = Array.from(el.querySelectorAll("span"));
-  spans.forEach((s) => {
-    s.style.opacity = "0";
-    s.style.transform = "translateY(2px)";
-    s.style.display = "inline-block";
-  });
-  return spans;
-}
-
 function safeSetText(el, text) {
   if (!el) return;
   el.textContent = text;
@@ -168,11 +151,8 @@ function partyPoppersBurst() {
 }
 
 // ===========================
-// Blow reminder (2 seconds)
+// Blow reminder (stays until blown)
 // ===========================
-// Replace ONLY this popup section in your main.js with the updated one below.
-// It will stay on screen until the candle is blown.
-
 let candleBlown = false;
 let blowTimeout = null;
 
@@ -188,8 +168,7 @@ function showBlowPopup() {
 
   const popup = document.createElement("div");
   popup.className = "blow-popup";
- popup.innerText = "Just click on blow Not asking to blow anything else just candle 😜";
-
+  popup.innerText = "Just click on blow Not asking to blow anything else just candle 😜";
   document.body.appendChild(popup);
 
   gsap.fromTo(
@@ -198,22 +177,6 @@ function showBlowPopup() {
     { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }
   );
 }
-
-// function showBlowPopup() {
-//   if (document.querySelector(".blow-popup")) return;
-
-//   const popup = document.createElement("div");
-//   popup.className = "blow-popup";
-//   popup.innerText = "Just click on blow Not asking to blow anything else just candle 😜";
-
-//   document.body.appendChild(popup);
-
-//   gsap.fromTo(
-//     popup,
-//     { opacity: 0, y: -10 },
-//     { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }
-//   );
-// }
 
 function hideBlowPopup() {
   const popup = document.querySelector(".blow-popup");
@@ -235,17 +198,31 @@ function handleCandleBlown() {
 
 // ===========================
 // Cake blow animation (click based)
+// Fix: works on replay by clearing old listeners + resetting flame
 // ===========================
 function setupCakeBlow(onDone) {
-  const blowBtn = document.getElementById("blowBtn");
+  let blowBtn = document.getElementById("blowBtn");
   const flame = document.getElementById("flame");
   const smoke = document.getElementById("smoke");
   const cake = document.getElementById("cake");
 
   if (!blowBtn || !flame || !smoke || !cake) return;
 
+  // Clear old click listeners by cloning the button
+  const freshBtn = blowBtn.cloneNode(true);
+  blowBtn.parentNode.replaceChild(freshBtn, blowBtn);
+  blowBtn = freshBtn;
+
+  // Reset visuals every time this scene is entered (important for replay)
+  blowBtn.dataset.done = "";
+  gsap.set(flame, { opacity: 1, scale: 1, clearProps: "transform" });
+  smoke.classList.remove("puff");
+  candleBlown = false;
+  hideBlowPopup();
+  startBlowTimer();
+
   const doBlow = () => {
-    if (blowBtn.dataset.done) return;
+    if (blowBtn.dataset.done === "1") return;
     blowBtn.dataset.done = "1";
 
     handleCandleBlown();
@@ -261,7 +238,11 @@ function setupCakeBlow(onDone) {
     void smoke.offsetWidth;
     smoke.classList.add("puff");
 
-    gsap.fromTo(cake, { y: 0 }, { y: -4, duration: 0.18, yoyo: true, repeat: 3, ease: "sine.inOut" });
+    gsap.fromTo(
+      cake,
+      { y: 0 },
+      { y: -4, duration: 0.18, yoyo: true, repeat: 3, ease: "sine.inOut" }
+    );
 
     partyPoppersBurst();
 
@@ -271,10 +252,6 @@ function setupCakeBlow(onDone) {
   };
 
   blowBtn.addEventListener("click", doBlow);
-
-  // Start reminder timer when setup runs
-  candleBlown = false;
-  startBlowTimer();
 }
 
 // ===========================
@@ -307,7 +284,7 @@ function setupMemoriesSlider() {
 
   const startAuto = () => {
     stopAuto();
-    autoTimer = setInterval(() => goTo(index + 1), 2400);
+    autoTimer = setInterval(() => goTo(index + 1), 4000);
   };
 
   const stopAuto = () => {
@@ -350,9 +327,13 @@ function setupMemoriesSlider() {
   startAuto();
   track.dataset.ready = "1";
 }
+// ===========================
+// Memories slider (AUTO DOTS FOR ALL SLIDES)
+// ===========================
 
 // ===========================
-// Insta send animation (fix blue box only issue)
+// Insta send animation
+// Fix: ensure sent bubble shows real text (no empty blue bubble)
 // ===========================
 function animateInstaSend(message) {
   const typed = document.querySelector(".ig-typed");
@@ -410,7 +391,6 @@ function animateInstaSend(message) {
     const startLeftRaw = typedRect.left + 8;
     const startTopRaw = typedRect.top + typedRect.height / 2;
 
-    // End position inside chat body, right side
     const endLeftRaw = cardRect.left + cardRect.width - maxW - 20;
     const endTopRaw = cardRect.top + cardRect.height - 160;
 
@@ -433,9 +413,7 @@ function animateInstaSend(message) {
   window.addEventListener("resize", onResize);
 
   const charsPerSecond = 10;
-  const typingDuration = Math.max(2.4, message.length / charsPerSecond);
-
-  let lastBubbleSpans = [];
+  const typingDuration = Math.max(2.0, message.length / charsPerSecond);
 
   tl.to(
     {},
@@ -467,13 +445,12 @@ function animateInstaSend(message) {
     })
     .add(() => {
       const newBubble = document.createElement("p");
-      newBubble.className = "ig-bubble ig-right-bubble hbd-chatbox";
-      newBubble.style.opacity = "1";
-
-      // Put real text inside bubble as spans (prevents empty blue bubble)
-      lastBubbleSpans = setBubbleWithSpans(newBubble, message);
-
+      newBubble.className = "ig-bubble ig-right-bubble";
+      newBubble.textContent = message; // FIX: real visible text
+      newBubble.style.opacity = "0";
       body.appendChild(newBubble);
+
+      gsap.to(newBubble, { opacity: 1, duration: 0.18, ease: "power1.out" });
 
       safeSetText(typed, "");
       if (placeholder) placeholder.style.opacity = "0.65";
@@ -482,13 +459,6 @@ function animateInstaSend(message) {
       window.removeEventListener("resize", onResize);
 
       scrollChatToBottom();
-    })
-    .to(lastBubbleSpans, {
-      duration: 0.22,
-      opacity: 1,
-      y: 0,
-      stagger: 0.02,
-      ease: "power1.out"
     });
 
   return tl;
@@ -517,7 +487,11 @@ const animationTimeline = () => {
   const ideaTextTrans = { opacity: 0, y: -20, rotationX: 5, skewX: "15deg" };
   const ideaTextTransLeave = { opacity: 0, y: 20, rotationY: 5, skewX: "-15deg" };
 
-  const messageText = "Happy birthday to youu!!";
+  const messageText = "Happy birthday to youu baby girl 👙 ";
+
+const memSlidesCount = document.querySelectorAll("#memoriesTrack .mem-slide").length || 3;
+const memSecondsPerSlide = 4.0; // must match your slider interval (2400ms)
+const memHoldSeconds = Math.max(6.2, memSlidesCount * memSecondsPerSlide);
 
   const tl = gsap.timeline({ paused: false });
   window.__birthdayTl = tl;
@@ -628,8 +602,6 @@ const animationTimeline = () => {
         setupCakeBlow(() => {
           if (window.__birthdayTl) window.__birthdayTl.play();
         });
-
-        // optional burst as soon as scene appears
         partyPoppersBurst();
       },
       null,
@@ -639,7 +611,6 @@ const animationTimeline = () => {
     // Pause here until candle is blown
     .addPause()
 
-    // Color animation (short)
     .to(".eight svg", {
       duration: 0.5,
       visibility: "visible",
@@ -650,7 +621,6 @@ const animationTimeline = () => {
       stagger: 0.25
     })
 
-    // Move to memories lane
     .to(".six", { duration: 0.6, opacity: 0, y: 30, zIndex: -1 }, "+=1.2")
     .from(".memories", { duration: 0.8, opacity: 0, y: 20 })
     .call(setupMemoriesSlider)
@@ -658,14 +628,20 @@ const animationTimeline = () => {
     .from(".memories-sub", { duration: 0.6, opacity: 0, y: 10 }, "-=0.45")
     .from(".memories-slider", { duration: 0.8, scale: 0.92, opacity: 0 }, "-=0.35")
     .from(".mem-hint", { duration: 0.6, opacity: 0, y: 10 }, "-=0.4")
-    .to(".memories", { duration: 0.6, opacity: 0, y: 20 }, "+=6.2")
+    .to(".memories", { duration: 0.6, opacity: 0, y: 20 }, `+=${memHoldSeconds}`)
 
-    // Final screen
     .from(".nine p", { duration: 1, ...ideaTextTrans, stagger: 1.2 })
     .to(".gift-wrap", { duration: 0.8, opacity: 1, visibility: "visible", y: 0, ease: "power2.out" }, "+=0.4")
     .to(".last-smile", { duration: 0.5, rotation: 90 }, "+=1")
     .call(setupNoGiftButton);
 
+  // FIX: replay should fully restart and candle should work again
   const replyBtn = document.getElementById("replay");
-  if (replyBtn) replyBtn.addEventListener("click", () => tl.restart());
+  if (replyBtn) {
+    replyBtn.addEventListener("click", () => {
+      candleBlown = false;
+      hideBlowPopup();
+      tl.restart();
+    });
+  }
 };
